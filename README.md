@@ -58,6 +58,11 @@ python -m pip --version
 uv pip install --no-cache-dir "fastmcp<3"
 ```
 
+7. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
 7. Verify version
 
 ```bash

@@ -1,0 +1,9 @@
+---
+applications:
+  - name: commerce-mcp-server
+    path: .
+    memory: 512MB
+    disk_quota: 1GB
+    random-route: true
+    services:
+      - mcp-destination-service
