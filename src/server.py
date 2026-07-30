@@ -78,6 +78,50 @@ def get_products() -> dict:
     except (httpx.HTTPError, RuntimeError, ValueError, KeyError, TypeError) as e:
         return {"status": "error", "message": str(e)}
 
+@mcp.tool
+def get_product(product_id: str) -> dict:
+    """Fetch a product by ID from the Commerce API.
+
+    Args:
+        product_id: The ID of the product to fetch.
+    Returns:
+        dict: The product details or error message.
+    """
+    try:
+        if MOCK_BACKEND:
+            data = _commerce_api.get_product_by_id(product_id)
+            return {"status": "success", "destination": "mock", "data": data}
+
+        destination_name = os.getenv("DESTINATION_NAME") or "COMMERCE_API_DESTINATION"
+        destination = _get_destination(destination_name)
+        data = _commerce_api.get_product_by_id(destination, product_id)
+        return {"status": "success", "destination": destination_name, "data": data}
+    except (httpx.HTTPError, RuntimeError, ValueError, KeyError, TypeError) as e:
+        return {"status": "error", "message": str(e)}
+
+
+@mcp.tool
+def get_product_by_sku(sku: str) -> dict:
+    """Fetch a product by SKU from the Commerce API.
+
+    Args:
+        sku: The SKU of the product to fetch.
+    Returns:
+        dict: The product details or error message.
+    """
+    try:
+        if MOCK_BACKEND:
+            data = _commerce_api.get_products(sku=sku)
+            product = next((p for p in data.get("value", []) if p.get("sku") == sku), None)
+            return {"status": "success", "destination": "mock", "data": product or {"error": "Product not found"}}
+
+        destination_name = os.getenv("DESTINATION_NAME") or "COMMERCE_API_DESTINATION"
+        destination = _get_destination(destination_name)
+        data = _commerce_api.get_products(destination, sku=sku)
+        product = next((p for p in data.get("value", []) if p.get("sku") == sku), None)
+        return {"status": "success", "destination": destination_name, "data": product or {"error": "Product not found"}}
+    except (httpx.HTTPError, RuntimeError, ValueError, KeyError, TypeError) as e:
+        return {"status": "error", "message": str(e)}
 
 @mcp.tool
 def get_categories() -> dict:

@@ -29,7 +29,7 @@ class CommerceApi:
             products_path=os.getenv("COMMERCE_PRODUCTS_PATH", "/odata/v4/catalog/Products")
         )
 
-    def get_products(self, destination: DestinationDetails) -> dict:
+    def get_products(self, destination: DestinationDetails, sku: str | None = None) -> dict:
         """Get Products
 
         Args:
@@ -39,6 +39,32 @@ class CommerceApi:
             dict: The products data.
         """
         url = _join_url(destination.url, self._config.products_path)
+        if sku:
+            url += f"?$filter=sku eq '{sku}'"
+
+        print(f"URL: {url}")
+
+        headers: dict[str, str] = {"Accept": "application/json"}
+        if destination.auth_header:
+            headers["Authorization"] = f"{destination.auth_header}"
+
+        timeout = httpx.Timeout(30.0)
+        resp = httpx.get(url, headers=headers, timeout=timeout)
+        resp.raise_for_status()
+        data = resp.json()
+        return data if isinstance(data, dict) else {"value": data}
+
+    def get_product_by_id(self, destination: DestinationDetails, product_id: str) -> dict:  
+        """Get Product by ID
+
+        Args:
+            destination (DestinationDetails): The details of the destination.
+            product_id (str): The ID of the product.
+
+        Returns:
+            dict: The product data.
+        """
+        url = _join_url(destination.url, f"{self._config.products_path}('{product_id}')")
 
         print(f"URL: {url}")
 
