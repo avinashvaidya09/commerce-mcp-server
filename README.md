@@ -322,3 +322,114 @@ curl -sS -X POST "$MCP_URL" \
   -H "Mcp-Session-Id: $SID" \
   -d '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"get_retailers","arguments":{}}}'
 ```
+
+# Proposed Topic: Custom MCP Server Vs Integration Suite MCP Gateway in an Enterprise Landscape
+
+## Overview
+
+This topic presents a hands-on comparison of two approaches for exposing SAP business APIs as tools for AI agents:
+
+1. Developing a custom MCP server using Python and deploying it on SAP BTP Cloud Foundry.
+2. Creating and governing MCP tools using the MCP Gateway capability in SAP Integration Suite.
+
+The same backend OData API and Joule agent scenario were implemented using both approaches. This allows the article to compare them based on actual implementation experience rather than only explaining MCP concepts theoretically.
+
+## Scenario Implemented
+
+A Commerce OData service exposed product information through operations such as:
+
+* Get product by product ID
+* Search for a product using SKU
+
+### Approach 1: Custom Python MCP Server
+
+A Python-based MCP server was developed and deployed on SAP BTP Cloud Foundry.
+
+The MCP server:
+
+* Destination was created to connect to the backend Commerce OData service.
+* Exposed the backend operations as MCP tools.
+* Was registered in Joule Studio.
+* Was consumed by a Joule agent and deployed as part of an AI assistant.
+
+This approach demonstrates how developers can create custom MCP tools with complete control over the implementation, business logic, request processing, response transformation, and integration behavior.
+
+### Approach 2: SAP Integration Suite MCP Gateway
+
+The same backend API was exposed using SAP Integration Suite MCP Gateway.
+
+* Destination was created to connect to the backend Commerce OData service. 
+* An OpenAPI 3.0 specification was created to describe the operations that should be exposed as MCP tools.
+* The generated MCP server was then connected to the same Joule agent.
+* SAP Integration Suite supports exposing APIs as governed MCP tools
+
+## Comparison of the Two Approaches
+
+### Custom Python MCP Server
+
+**Advantages**
+
+* Complete flexibility over tool behavior and implementation.
+* Can combine multiple backend systems into a single tool.
+* Allows custom validation, transformations, orchestration, caching, and error handling.
+* Does not require an OpenAPI specification because tool definitions are implemented directly in code.
+
+**Considerations**
+
+* The development team owns deployment, scaling, patching, and runtime maintenance.
+* Authentication and authorization must be designed and implemented.
+* Monitoring and logging must be configured separately.
+* Traffic management and consumption controls require additional services or custom implementation.
+* Tool lifecycle and version management remain the responsibility of the development team.
+
+### SAP Integration Suite MCP Gateway
+
+**Advantages**
+
+* Existing APIs can be exposed as MCP tools with less custom implementation.
+* Provides a centralized and standardized approach for publishing enterprise tools.
+* API policies can be applied for security and traffic management.
+* Capabilities such as quota enforcement, surge protection, IP filtering, authentication, monitoring, and analytics can be applied centrally.
+* Existing Integration Suite API governance practices can be extended to AI-agent tool consumption.
+* MCP servers can be published and bundled into products for controlled discovery and consumption.
+
+**Considerations**
+
+* Complex tool-specific business logic may still require a custom service or integration layer.
+* The quality of the MCP tool depends heavily on the underlying API design and OpenAPI specification.
+* Availability depends on the applicable SAP Integration Suite service plan.
+
+## Key Learning
+
+The two approaches are not necessarily competitors.
+
+A custom Python MCP server is useful when the tool requires significant custom logic, orchestration, aggregation, or transformation.
+
+SAP Integration Suite MCP Gateway is useful when organizations want to expose existing SAP or non-SAP APIs as standardized, secure, monitored, and governed tools for AI agents.
+
+
+## SAP’s Direction for MCP
+
+SAP appears to be positioning MCP as a standard for connecting AI agents with enterprise systems and SAP Integration Suite as a governed integration layer for those agent-to-tool interactions.
+
+
+## How This Topic Is Different from a Generic MCP Server Topic
+
+This is not another **“how to build an MCP server”** article.
+
+A generic MCP server topic normally focuses on:
+
+* MCP architecture and protocol concepts.
+* Creating tools using Python.
+* Running an MCP server locally or on Cloud Foundry.
+* Connecting the server to an AI client.
+
+This topic begins where a normal MCP server implementation ends.
+
+Its primary focus is:
+
+* Comparing a custom MCP server with SAP Integration Suite MCP Gateway.
+* Showing how existing APIs can become governed tools for Joule agents.
+* Showing how enterprise policies such as quotas, surge protection, and IP filtering can be leveraged.
+
+

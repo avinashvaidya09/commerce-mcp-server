@@ -15,9 +15,13 @@ def _load(filename: str) -> dict:
 class MockCommerceApi:
     """Mock implementation of the Commerce API using local payload files."""
 
-    def get_products(self, destination=None) -> dict:
-        """Return all products from the mock payload."""
-        return _load("get_products_response.json")
+    def get_products(self, destination=None, sku: str | None = None) -> dict:
+        """Return all products from the mock payload, optionally filtered by SKU."""
+        data = _load("get_products_response.json")
+        if sku:
+            filtered = [p for p in data.get("value", []) if p.get("sku") == sku]
+            return {"@odata.context": "$metadata#Products", "value": filtered}
+        return data
 
     def get_categories(self, destination=None) -> dict:
         """Return all categories from the mock payload."""
@@ -34,3 +38,9 @@ class MockCommerceApi:
         data = _load("get_business_partners.json")
         filtered = [bp for bp in data.get("value", []) if bp.get("type") == "RETAILER"]
         return {"@odata.context": "$metadata#BusinessPartners", "value": filtered}
+
+    def get_product_by_id(self, destination=None, product_id: str = "") -> dict:
+        """Return a single product by its ID."""
+        data = _load("get_products_response.json")
+        product = next((p for p in data.get("value", []) if p.get("ID") == product_id), None)
+        return product if product else {"error": "Product not found"}
